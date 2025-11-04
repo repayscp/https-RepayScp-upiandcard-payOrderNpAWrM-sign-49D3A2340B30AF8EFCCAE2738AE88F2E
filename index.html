@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI Payment</title>
+  <style>
+    body { background: #f5f8fa; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
+    .gateway-container {
+      max-width: 900px; margin: 40px auto; background: #fff;
+      border-radius: 18px; box-shadow: 0 4px 22px 5px #e6eaf1;
+      display: flex; min-height: 600px; overflow: hidden;
+      flex-wrap: wrap;
+    }
+    .left-section, .right-section { flex: 1; min-width: 300px; padding: 32px 24px; }
+    .left-section {
+      border-right: 1px solid #e6e7ea; display: flex;
+      flex-direction: column; align-items: center;
+    }
+    .amount-time { width: 100%; display: flex; justify-content: space-between; font-size: 1.2em; margin-bottom: 12px;}
+    .amount { color: #1890ff; font-weight: bold;}
+    .timer { color: #757575;}
+    .upi-id { margin-bottom: 15px; display: flex; align-items: center; }
+    .upi-value { color: #f47c23; font-size: 1.05em; margin: 0 10px; font-family: monospace; transition: color 0.3s ease; }
+    .copy-btn { border: none; background: #eaecef; padding: 4px 11px; border-radius: 4px; font-size: 0.98em; cursor: pointer;}
+    .qr-code img { margin: 18px 0; width: 160px; height: 160px; border-radius: 8px; border: 1px solid #eaeaea; }
+    .success-text { color: #f89d2d; font-weight: 500; margin-bottom: 12px; }
+    .pay-apps { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap:wrap;}
+    .pay-apps button { border: none; background: #f2f6ff; color: #2670f0; padding: 8px 14px; border-radius: 5px; font-weight: 600; cursor: pointer;}
+    .pay-apps button:hover { background: #ddeefd;}
+    .reminder, .warning { color: #c82333; margin: 10px 0 12px 0; font-size: 0.95em; text-align: center; font-weight: 500;}
+    .warning { background: #e2f0fd; color: #2272bb; border-radius: 7px; padding: 16px 10px; display: flex; align-items: center; gap: 8px; font-size: 1em; margin-top: 10px;}
+    .warning-icon { font-size: 1.3em; }
+    .right-section { display: flex; flex-direction: column; align-items: center; justify-content: center;}
+    .mobile-mockup img { width: 180px; margin-bottom: 23px; box-shadow: 0 8px 16px #eaeaea; border-radius: 26px; }
+    .instructions { background: #f8faff; border-radius: 13px; padding: 22px; margin-bottom: 12px; width: 240px;}
+    .inst-row { margin-bottom: 9px; color: #324968; font-size: 1em; }
+    .powered { color: #2cc133; font-size: 1.06em; margin-top: 14px; }
+    @media (max-width: 750px) {
+      .gateway-container { flex-direction: column; max-width: 98vw; }
+      .left-section, .right-section { border: none; padding: 16px;}
+      .right-section { align-items: flex-start; }
+      .instructions { width: 96%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="gateway-container">
+    <div class="left-section">
+      <div class="amount-time">
+        <span class="amount" id="amount">RePay</span>
+        <span class="timer" id="countdown-timer">10:00</span>
+      </div>
+      <div class="upi-id">
+        <span>UPI ID:</span>
+        <span class="upi-value" id="upi-value"></span>
+        <button class="copy-btn" id="copy-upi">Copy UPI</button>
+      </div>
+      <div class="qr-code">
+        <img src="photo_6075802763360144608_x.jpg" alt="UPI QR Code">
+      </div>
+      <div class="success-text">Have you paid successfully?</div>
+      <div class="pay-apps" style="gap:4px;">
+        <button onclick="openUPIApp('gpay')">GooglePay</button>
+        <button onclick="openUPIApp('phonepe')">PhonePe</button>
+        <button onclick="openUPIApp('paytm')">Paytm</button>
+        <button onclick="openUPIApp('other')">Other Bank</button>
+      </div>
+      <div class="reminder">
+        You can use the above button(s) for auto-filled payment.<br>
+        Make sure to use the correct app for instant payment to the above UPI ID.
+      </div>
+      <div class="warning">
+        <span class="warning-icon">📱</span>
+        <span>
+          Please confirm that the account info and amount is correct. If using Google Pay, PhonePe, or Paytm, make sure you're on a mobile device.
+        </span>
+      </div>
+    </div>
+    <div class="right-section">
+      <div class="mobile-mockup">
+        <img src="bg.png" alt="Pay App illustration" />
+      </div>
+      <div class="instructions">
+        <div class="inst-row"><span>⚠️</span>Do not scan the QR code repeatedly</div>
+        <div class="inst-row"><b>1.</b> Open your UPI or Wallet App or use the button above</div>
+        <div class="inst-row"><b>2.</b> Confirm the amount and make payment</div>
+      </div>
+      <div class="powered">✅ 100% Secure UPI Payment. No Gateway, only direct to receiver.</div>
+    </div>
+  </div>
+
+  <script>
+    const fullUPI = "7890uiopp@slc";
+
+    function maskUPI(upi) {
+      const [user, domain] = upi.split("@");
+      if (user.length <= 4) return upi;
+      const first = user.slice(0, 2);
+      const last = user.slice(-1);
+      const masked = first + "******" + last;
+      return masked + "@" + domain;
+    }
+
+    const upiValueElem = document.getElementById("upi-value");
+    upiValueElem.textContent = maskUPI(fullUPI);
+
+    document.getElementById("copy-upi").addEventListener("click", function() {
+      navigator.clipboard.writeText(fullUPI).then(() => {
+        upiValueElem.textContent = fullUPI;
+        const btn = document.getElementById("copy-upi");
+        btn.textContent = "Copied!";
+        setTimeout(() => btn.textContent = "Copy UPI", 1300);
+      });
+    });
+
+    function startCountdown(min, sec) {
+      const timerElem = document.getElementById("countdown-timer");
+      let total = min * 60 + sec;
+      const interval = setInterval(() => {
+        if (total <= 0) {
+          timerElem.textContent = "00:00";
+          clearInterval(interval);
+          return;
+        }
+        total--;
+        const m = Math.floor(total / 60);
+        const s = total % 60;
+        timerElem.textContent = String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+      }, 1000);
+    }
+
+    // Timer set to 10 minutes
+    startCountdown(10, 0);
+
+    function openUPIApp(app) {
+      var vpa = 'nyadav7452-5@okicic';
+      var name = 'Receiver Name';
+      var amount = document.getElementById("amount").textContent.replace(/[₹,]/g,'');
+      var note = 'Deposit';
+      var upiUrl = `upi://pay?pa=${encodeURIComponent(vpa)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}`;
+
+      let intentUrl = '';
+      switch(app) {
+        case 'gpay': intentUrl = `https://pay.google.com/gp/p/ui/pay?uri=${encodeURIComponent(upiUrl)}`; break;
+        case 'phonepe': intentUrl = `phonepe://pay?${upiUrl.replace('upi://pay?','')}`; break;
+        case 'paytm': intentUrl = `paytmmp://pay?${upiUrl.replace('upi://pay?','')}`; break;
+        default: intentUrl = upiUrl;
+      }
+      if (window.innerWidth <= 800) {
+        window.location.href = intentUrl;
+      } else {
+        alert('Please use a mobile device with the payment app installed for direct app opening.');
+      }
+    }
+  </script>
+</body>
+</html>
